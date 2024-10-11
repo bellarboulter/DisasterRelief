@@ -81,7 +81,7 @@ public class Allocation {
         }
         Allocation otherAlloc = (Allocation)other;
 
-        return this.locations.equals(otherAlloc.locations);
+        return this.locations.equals(otherAlloc);
     }
 
     public int hashCode() {
