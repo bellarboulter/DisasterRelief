@@ -1,9 +1,3 @@
-// Bella Boulter
-// 01.01.2023
-// CSE 123 Section AB
-// TA: Jake Page
-// Programming Assignment 2: Disaster Relief
-
 import java.util.*;
 
 public class Client {
@@ -15,52 +9,65 @@ public class Client {
         System.out.println(scenario);
         
         double budget = 2000;
-        Set<Allocation> allocations = generateOptions(budget, scenario);
-        printResult(allocations, budget);
+        Allocation allocation = allocateRelief(budget, scenario);
+        printResult(allocation, budget);
     }
 
-    public static Set<Allocation> generateOptions(double budget, List<Location> sites) {
-        return allocateRelief(budget, sites, "");
+    // This method takes a budget and a list of Location objects as parameter. 
+    // The method will compute and return the allocation of resources that will 
+    // result in the most people being helped with the given budget. 
+    // If there is more than one allocation that will result in the most people being helped,
+    // the method will return the allocation that costs the least. 
+    // If there is more than one allocation that will result in 
+    // the most people being helped for the lowest cost,
+    // the method will return any of these allocations.
+    public static Allocation allocateRelief(double budget, List<Location> sites) {
+        return allocateRelief(budget, sites, new Allocation());
     }
+    
+    // Private helper method for allocateRelief
+    // Takes in an extra parameter, soFar, to keep track of allocations
+    private static Allocation allocateRelief(double budget, 
+    List<Location> sites, Allocation soFar) {
+        
+        Allocation currentAllocation = soFar;
 
-    private static Allocation allocateRelief(double budget, List<Location> sites, String soFar) {
-        String currBest = soFar;
+        if (budget > 0) {
+            for (int i = 0; i < sites.size(); i++) {
+                Location location = sites.get(i); 
 
-        if (budget != 0) {
-            for (int i = 0; i < letters.size(); i++) {
-                char letter = letters.get(i);
+                if (budget - location.getCost() >= 0) {
+                    
+                    // choose
+                    sites.remove(i);
 
-                // Choose
-                letters.remove(i);
+                    // explore
+                    Allocation result = allocateRelief(budget - location.getCost(),
+                    sites, soFar.withLoc(location));
 
-                // Cxplore
-                String result = findBestWord(letters, dict, soFar + letter);
+                    // check for new best
+                    if (result.totalPeople() > currentAllocation.totalPeople() ||
+                        result.totalPeople() == currentAllocation.totalPeople() && 
+                        result.totalCost() < currentAllocation.totalCost()) {
+                        currentAllocation = result;
+                    }
 
-                // Check for new best
-                if (dict.contains(result.toLowerCase()) && 
-                    (scoreWord(result) > scoreWord(currBest) ||
-                     scoreWord(result) == scoreWord(currBest) && result.length() < currBest.length())) {
-                    currBest = result;
+                    // unchoose
+                    sites.add(i, location);
                 }
-
-                // Unchoose
-                letters.add(i, letter);
-            }
+            } 
         }
-
-        return currBest;
+        return currentAllocation;
     }
 
     // PROVIDED HELPER METHODS - **DO NOT MODIFY ANYTHING BELOW THIS LINE!**
 
-    public static void printResult(Set<Allocation> allocs, double budget) {
-        for (Allocation alloc : allocs) {
-            System.out.println("Result: ");
-            System.out.println("  " + alloc);
-            System.out.println("  People helped: " + alloc.totalPeople());
-            System.out.printf("  Cost: $%.2f\n", alloc.totalCost());
-            System.out.printf("  Unused budget: $%.2f\n", (budget - alloc.totalCost()));        
-        }
+    public static void printResult(Allocation alloc, double budget) {
+        System.out.println("Result: ");
+        System.out.println("  " + alloc);
+        System.out.println("  People helped: " + alloc.totalPeople());
+        System.out.printf("  Cost: $%.2f\n", alloc.totalCost());
+        System.out.printf("  Unused budget: $%.2f\n", (budget - alloc.totalCost()));
     }
 
     public static List<Location> createRandomScenario(int numLocs, int minPop, int maxPop, double minCostPer, double maxCostPer) {
